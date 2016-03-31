@@ -13,6 +13,8 @@ public class Proxy extends Thread {
 	
 	@Override
 	public void run() {
+		new SU().run();
+		
 		try(ServerSocket proxySocket = new ServerSocket(Helpers.PORT)) {
 			Socket socket;
 			System.out.println("Proxy server started on " + Helpers.HOST + ":" + Helpers.PORT);

@@ -6,8 +6,10 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.regex.Matcher;
 
+import com.sun.jndi.toolkit.url.Uri;
+
 public class Pooling extends Thread {
-        private final Socket clientSocket;
+        private Socket clientSocket;
         private boolean previousWasR = false;
         
         private Matcher matcherConnect;
@@ -28,21 +30,92 @@ public class Pooling extends Thread {
                 if (matcherConnect.matches()) {
                 	SSL();
                 } else if(matcherGet.matches()) {
-                	HTTP();
+                	System.out.println(matcherGet.group(1));
+                	if(matcherGet.group(1).equals("www.glassbyte.com")){
+                		System.out.println(matcherGet.group(1) + " has been blacklisted!");
+                		Blacklist.block(matcherGet.group(1), clientSocket);	
+                	} else {
+                		System.out.println(matcherGet.group(1) + " has been whitelisted!");
+                		HTTP();
+                	}
                 }
             } catch (IOException e) {
-                e.printStackTrace();  // TODO: implement catch
+                e.printStackTrace();  
             } finally {
                 try {
                     clientSocket.close();
                 } catch (IOException e) {
-                    e.printStackTrace();  // TODO: implement catch
+                    e.printStackTrace(); 
                 }
             }
         }
         
         private void HTTP() throws IOException {
-        	
+
+            String header;
+            
+            do {
+                header = readLine(clientSocket);
+                System.out.println(header);
+            } while (!"".equals(header));
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(clientSocket.getOutputStream(), "ISO-8859-1");
+            
+            Uri uri = new Uri("http://" + matcherGet.group(1) + "/");
+
+            final Socket forwardSocket;
+            try {
+                forwardSocket = new Socket(uri.getHost(), uri.getPort() < 0 ? 80 : uri.getPort());
+                System.out.println(forwardSocket);
+            } catch (IOException | NumberFormatException e) {
+                e.printStackTrace();  
+                outputStreamWriter.write("HTTP/" + matcherGet.group(2) + " 502 Bad Gateway\r\n");
+                outputStreamWriter.write("Proxy-agent: Simple/0.1\r\n");
+                outputStreamWriter.write("\r\n");
+                outputStreamWriter.flush();
+                return;
+            }
+            try {
+                outputStreamWriter.write("HTTP/" + matcherGet.group(2) + " 200 Connection established\r\n");
+                outputStreamWriter.write("Proxy-agent: Simple/0.1\r\n");
+                outputStreamWriter.write("\r\n");
+                outputStreamWriter.flush();
+
+                Thread remoteToClient = new Thread() {
+                    @Override
+                    public void run() {
+                        forwardData(forwardSocket, clientSocket);
+                    }
+                };
+                remoteToClient.start();
+                try {
+                    if (previousWasR) {
+                        int read = clientSocket.getInputStream().read();
+                        if (read != -1) {
+                            if (read != '\n') {
+                                forwardSocket.getOutputStream().write(read);
+                            }
+                            forwardData(clientSocket, forwardSocket);
+                        } else {
+                            if (!forwardSocket.isOutputShutdown()) {
+                                forwardSocket.shutdownOutput();
+                            }
+                            if (!clientSocket.isInputShutdown()) {
+                                clientSocket.shutdownInput();
+                            }
+                        }
+                    } else {
+                        forwardData(clientSocket, forwardSocket);
+                    }
+                } finally {
+                    try {
+                        remoteToClient.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace(); 
+                    }
+                }
+            } finally {
+                forwardSocket.close();
+            }
         }
         
         private void SSL() throws IOException {
@@ -103,7 +176,7 @@ public class Pooling extends Thread {
                     try {
                         remoteToClient.join();
                     } catch (InterruptedException e) {
-                        e.printStackTrace();  // TODO: implement catch
+                        e.printStackTrace(); 
                     }
                 }
             } finally {
@@ -120,8 +193,10 @@ public class Pooling extends Thread {
                         byte[] buffer = new byte[4096];
                         int read;
                         do {
+                        	System.out.println("here");
                             read = inputStream.read(buffer);
                             if (read > 0) {
+                            	System.out.println("read >0");
                                 outputStream.write(buffer, 0, read);
                                 if (inputStream.available() < 1) {
                                     outputStream.flush();
@@ -139,7 +214,7 @@ public class Pooling extends Thread {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();  // TODO: implement catch
+                e.printStackTrace();  
             }
         }
 

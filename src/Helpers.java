@@ -6,11 +6,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Helpers {
-	public static final int PORT = 2035;
+	public static final int PORT = 2037;
 	public static final String HOST = "localhost";
 	
     public static final Pattern GET_PATTERN = 
-    		Pattern.compile("GET http://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]>/ HTTP/(1\\.[01])",
+    		Pattern.compile("GET http://(.*)/ HTTP/(1\\.[01])",
             Pattern.CASE_INSENSITIVE);
 	
 	public static final Pattern CONNECT_PATTERN = 
