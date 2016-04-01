@@ -1,22 +1,12 @@
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
-
-import com.sun.jndi.toolkit.url.Uri;
 
 public class Pooling extends Thread {
 	private Socket clientSocket;
@@ -138,6 +128,7 @@ public class Pooling extends Thread {
 						to_c.flush();
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 				}
 				server.close();
 				clientSocket.close();
@@ -189,7 +180,9 @@ public class Pooling extends Thread {
 					toClient.write(response, 0, bytesRead);
 					toClient.flush();
 				}
-
+				
+				Caching.logHistory(host);
+				Caching.saveFile(response.toString(), host);
 				server.close();
 				clientSocket.close();
 			}

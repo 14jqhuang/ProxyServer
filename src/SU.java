@@ -34,12 +34,8 @@ public class SU extends Thread {
 						suPrint("--unblock <website> -> removes website from blacklist");
 					} else if(parts[1].equals("--block")) {
 						if(!parts[2].equals(null)) {
-							//if(!hasWebsite(parts[2])) {
-								addToBlacklist(parts[2]);
-								suPrint(parts[2] + " has been added to the blacklist!");	
-							//} else {
-							//	suPrint("Website already on blacklist!");
-							//}
+							addToBlacklist(parts[2]);
+							suPrint(parts[2] + " has been added to the blacklist!");	
 						} else {
 							suPrint("Website cannot be null!");
 						}
@@ -84,7 +80,6 @@ public class SU extends Thread {
 			Scanner scanner = new Scanner(file);
 			while(scanner.hasNext()) {
 				blacklist.add(scanner.next());
-				scanner.close();
 			}
 			scanner.close();
 		} catch(Exception e) {
@@ -97,39 +92,6 @@ public class SU extends Thread {
 		}
 		
 		return blacklistedWebsites;
-	}
-	
-	private void removeFromBlacklist(String url) {
-		try {
-			File file = new File(BLACKLIST_PATH);
-			Scanner scanner = new Scanner(file);
-			
-			while(scanner.hasNext()) {
-				if(scanner.next().contains(url)) {
-					//delete url from file
-					
-				}
-			}
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private boolean hasWebsite(String url) {
-		try {
-			File file = new File(BLACKLIST_PATH);
-			Scanner scanner = new Scanner(file);
-			while(scanner.hasNext()) {
-				if(scanner.hasNext(url)) {
-					scanner.close();
-					return true;
-				}
-			}
-			scanner.close();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		return false;
 	}
 	
 	private static void suPrint(String phrase) {

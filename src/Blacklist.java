@@ -2,7 +2,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
@@ -59,6 +58,7 @@ public class Blacklist {
 				currentLine = scanner.next();
 				if(currentLine.contains(url)) {
 					System.out.println(url + " is a blacklisted website!");
+					scanner.close();
 					return true;
 				}
 			}
