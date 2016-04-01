@@ -6,7 +6,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Helpers {
-	public static final int PORT = 2037;
+	public static final int PORT = 2038;
+	public static final int NON_CONNECT_PORT = 80;
+	public static final int CONNECT_PORT = 443;
+	
 	public static final String HOST = "localhost";
 	public static final String USER_AGENT = "Mozilla/5.0";
 	
