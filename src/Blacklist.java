@@ -29,7 +29,8 @@ public class Blacklist {
 					+ "</font><font face=\"verdana\" size=\"4\"> has been blacklisted from use.</font> </p>"
 					+ "<p><font face=\"verdana\" size=\"4\">Please contact your system administrator.</font></p>"
 					+ "<p><font face=\"verdana\" size=\"4\">No wanking ;p</font></p>"
-					+ "</body>" + "</html>\r\n";
+					+ "</body>" 
+					+ "</html>\r\n";
 
 			byte[] message_b = message.getBytes();
 			final OutputStream to_c = clientSocket.getOutputStream();
@@ -52,11 +53,11 @@ public class Blacklist {
 	public static boolean checkList(String url) {
 		try {
 	        String currentLine = "";
-			File file = new File("./src/Blacklist.txt");
+			File file = new File("./admin/Blacklist.txt");
 			Scanner scanner = new Scanner(file);
 			while(scanner.hasNext()) {
 				currentLine = scanner.next();
-				if(url.contains(currentLine)) {
+				if(currentLine.contains(url)) {
 					System.out.println(url + " is a blacklisted website!");
 					return true;
 				}
@@ -65,6 +66,7 @@ public class Blacklist {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println(url + " is a whitelisted website!");
 		return false;
 	}
 
