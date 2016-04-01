@@ -1,9 +1,13 @@
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.URL;
 import java.util.regex.Matcher;
 
 import com.sun.jndi.toolkit.url.Uri;
@@ -51,71 +55,36 @@ public class Pooling extends Thread {
         }
         
         private void HTTP() throws IOException {
-
-            String header;
-            
-            do {
-                header = readLine(clientSocket);
-                System.out.println(header);
-            } while (!"".equals(header));
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(clientSocket.getOutputStream(), "ISO-8859-1");
             
             Uri uri = new Uri("http://" + matcherGet.group(1) + "/");
+            URL url = new URL("http://" + matcherGet.group(1) + "/");
 
-            final Socket forwardSocket;
-            try {
-                forwardSocket = new Socket(uri.getHost(), uri.getPort() < 0 ? 80 : uri.getPort());
-                System.out.println(forwardSocket);
-            } catch (IOException | NumberFormatException e) {
-                e.printStackTrace();  
-                outputStreamWriter.write("HTTP/" + matcherGet.group(2) + " 502 Bad Gateway\r\n");
-                outputStreamWriter.write("Proxy-agent: Simple/0.1\r\n");
-                outputStreamWriter.write("\r\n");
-                outputStreamWriter.flush();
-                return;
-            }
-            try {
-                outputStreamWriter.write("HTTP/" + matcherGet.group(2) + " 200 Connection established\r\n");
-                outputStreamWriter.write("Proxy-agent: Simple/0.1\r\n");
-                outputStreamWriter.write("\r\n");
-                outputStreamWriter.flush();
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", Helpers.USER_AGENT);
+            
+            int responseCode = connection.getResponseCode();
+    		System.out.println("\nSending 'GET' request to URL : " + url);
+    		System.out.println("Response Code : " + responseCode);
 
-                Thread remoteToClient = new Thread() {
-                    @Override
-                    public void run() {
-                        forwardData(forwardSocket, clientSocket);
-                    }
-                };
-                remoteToClient.start();
-                try {
-                    if (previousWasR) {
-                        int read = clientSocket.getInputStream().read();
-                        if (read != -1) {
-                            if (read != '\n') {
-                                forwardSocket.getOutputStream().write(read);
-                            }
-                            forwardData(clientSocket, forwardSocket);
-                        } else {
-                            if (!forwardSocket.isOutputShutdown()) {
-                                forwardSocket.shutdownOutput();
-                            }
-                            if (!clientSocket.isInputShutdown()) {
-                                clientSocket.shutdownInput();
-                            }
-                        }
-                    } else {
-                        forwardData(clientSocket, forwardSocket);
-                    }
-                } finally {
-                    try {
-                        remoteToClient.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace(); 
-                    }
-                }
-            } finally {
-                forwardSocket.close();
-            }
+    		BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+    		String inputLine;
+    		StringBuffer response = new StringBuffer();
+
+    		while ((inputLine = in.readLine()) != null) {
+    			response.append(inputLine);
+    		}
+    		in.close();
+
+    		//print result
+    		System.out.println(response.toString());
+    		byte[] buffer = response.toString().getBytes();
+
+            OutputStream outputStream = clientSocket.getOutputStream();
+            outputStream.write(buffer);
+            outputStream.flush();
+            outputStream.close();
+            clientSocket.close();
         }
         
         private void SSL() throws IOException {
@@ -193,10 +162,8 @@ public class Pooling extends Thread {
                         byte[] buffer = new byte[4096];
                         int read;
                         do {
-                        	System.out.println("here");
                             read = inputStream.read(buffer);
                             if (read > 0) {
-                            	System.out.println("read >0");
                                 outputStream.write(buffer, 0, read);
                                 if (inputStream.available() < 1) {
                                     outputStream.flush();

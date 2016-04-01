@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 public class Helpers {
 	public static final int PORT = 2037;
 	public static final String HOST = "localhost";
+	public static final String USER_AGENT = "Mozilla/5.0";
 	
     public static final Pattern GET_PATTERN = 
     		Pattern.compile("GET http://(.*)/ HTTP/(1\\.[01])",
@@ -16,6 +17,10 @@ public class Helpers {
 	public static final Pattern CONNECT_PATTERN = 
 			Pattern.compile("CONNECT (.+):(.+) HTTP/(1\\.[01])",
 			Pattern.CASE_INSENSITIVE);
+	
+	public static void logWebsite(String url) {
+		
+	}
 	
 	public static String determineReq(String request) {
 		Matcher matcherGet = Helpers.GET_PATTERN.matcher(request);
