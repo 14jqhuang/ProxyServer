@@ -12,11 +12,14 @@ public class Caching {
 	public static final String BASE_DIR = "./admin/Cache/";
 	public static final String BASE_DIR_LOG = "./admin/Log.txt";
 		
+	/**
+	 * Stores a record of websites requested with the current time and date
+	 * @param url website requested by the user
+	 */
 	public static void logHistory(String url) {
 		try {
 			String timeStamp = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy").format(Calendar.getInstance().getTime());
 			String log = url + " accessed at " + timeStamp + "\n";
-			
 			Path filePath = Paths.get(BASE_DIR_LOG);
 			Files.write(filePath, log.getBytes(), StandardOpenOption.APPEND);
 		} catch(Exception e) {
@@ -24,10 +27,10 @@ public class Caching {
 		}
 	}
 	
-	public static boolean checkCached(String cacheVersion) {
-		return false;
-	}
-	
+	/**
+	 * Creates a directory pertaining to the website requested
+	 * @param uri host being pinged
+	 */
 	public static void createDir(String uri) {
 		File directory = new File(BASE_DIR + uri);
 		if(!directory.exists()) {
@@ -45,13 +48,16 @@ public class Caching {
 		}
 	}
 	
+	/**
+	 * Stores and recursively downloads the appropriate file to be cached
+	 * @param contents data being cached 
+	 * @param uri host name pinged by the request
+	 */
 	public static void saveFile(String contents, String uri) {
-		
 	    String extension = uri.substring(uri.lastIndexOf("."));
-	    
 		if(!extension.contains(".com") || !extension.contains(".ie")){
 			try {
-				String fileDir = BASE_DIR + uri + "/" + uri.replace(extension, "") + ".txt";
+				String fileDir = BASE_DIR + uri + "/";
 				System.out.println(fileDir);
 				
 				byte data[] = contents.getBytes();

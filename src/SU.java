@@ -15,6 +15,9 @@ public class SU extends Thread {
 		suPrint("Type su --<cmd> to invoke an administrator command.");
 	}
 	
+	/**
+	 * Background task handling for receiving input as an admin
+	 */
 	@Override
 	public void run() {
 		try {
@@ -63,7 +66,11 @@ public class SU extends Thread {
 		}
 	}
 	
-	private void addToBlacklist(String url) {
+	/**
+	 * Adds the url as a parameter to the blacklist
+	 * @param url url to be blocked
+	 */
+	public void addToBlacklist(String url) {
 		try {
 			Path filePath = Paths.get(BLACKLIST_PATH);
 			Files.write(filePath, url.getBytes(), StandardOpenOption.APPEND);
@@ -72,7 +79,11 @@ public class SU extends Thread {
 		}
 	}
 	
-	private String[] blacklistedWebsites() {
+	/**
+	 * Retrieves the list of websites for comparison
+	 * @return list of blacklisted websites
+	 */
+	public String[] blacklistedWebsites() {
 		ArrayList<String> blacklist = new ArrayList<String>();
 		
 		try {
@@ -94,7 +105,11 @@ public class SU extends Thread {
 		return blacklistedWebsites;
 	}
 	
-	private static void suPrint(String phrase) {
+	/**
+	 * Prints a phrase provided to be returned by the superuser
+	 * @param phrase phrase to be reported by SU
+	 */
+	public static void suPrint(String phrase) {
 		System.out.println("SU: " + phrase);
 	}
 

@@ -11,10 +11,17 @@ import java.net.URI;
 public class Pooling extends Thread {
 	private Socket clientSocket;
 
+	/**
+	 * Constructor
+	 */
 	public Pooling(Socket clientSocket) {
 		this.clientSocket = clientSocket;
 	}
 
+	/**
+	 * Thread handler for filtering and conduit behaviour for connections
+	 * as a middle-man for connection forwarding of SSL and HTTP
+	 */
 	@Override
 	public void run() {
 		outside: try {
@@ -132,7 +139,6 @@ public class Pooling extends Thread {
 				}
 				server.close();
 				clientSocket.close();
-
 				break outside;
 			}
 
@@ -180,7 +186,6 @@ public class Pooling extends Thread {
 					toClient.write(response, 0, bytesRead);
 					toClient.flush();
 				}
-				
 				Caching.logHistory(host);
 				Caching.saveFile(response.toString(), host);
 				server.close();

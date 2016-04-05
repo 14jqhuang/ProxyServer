@@ -11,6 +11,9 @@ public class Proxy extends Thread {
 		(new Proxy()).run();
 	}
 	
+	/**
+	 * Spawns threads for connection and superuser handling
+	 */
 	@Override
 	public void run() {
 		new SU().start();

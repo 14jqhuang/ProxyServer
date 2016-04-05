@@ -7,10 +7,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class Blacklist {
-
-	public Blacklist() {
-	}
-
+	/**
+	 * Returns a block message to the client for trying to access
+	 * a blocked website and handles the socket connections
+	 * @param url url to be checked for being on the blacklist
+	 * @param clientSocket socket accepted from the client
+	 */
 	public static void blockWebsite(String url, Socket clientSocket) {
 		try {
 			System.out.println(url + " is a blacklisted website!");
@@ -23,11 +25,9 @@ public class Blacklist {
 
 					"<body>"
 					+ "<h1><font face=\"verdana\">WARNING!</font></h1>"
-					+ "<p><font face=\"verdana\" color=\"red\" size=\"4\">"
-					+ url
-					+ "</font><font face=\"verdana\" size=\"4\"> has been blacklisted from use.</font> </p>"
+					+ "<p><font face=\"verdana\" color=\"red\" size=\"4\">" + url + "</font>"
+					+ "<font face=\"verdana\" size=\"4\"> has been blacklisted from use.</font></p>"
 					+ "<p><font face=\"verdana\" size=\"4\">Please contact your system administrator.</font></p>"
-					+ "<p><font face=\"verdana\" size=\"4\">No wanking ;p</font></p>"
 					+ "</body>" 
 					+ "</html>\r\n";
 
@@ -49,6 +49,11 @@ public class Blacklist {
 		}
 	}
 
+	/**
+	 * Checks the url provided if it exists on the blacklist
+	 * @param url url to be checked
+	 * @return boolean true or false for if the url is on the list
+	 */
 	public static boolean checkList(String url) {
 		try {
 	        String currentLine = "";
