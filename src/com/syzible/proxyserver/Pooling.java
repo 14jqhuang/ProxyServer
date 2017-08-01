@@ -23,6 +23,7 @@ public class Pooling extends Thread {
 	@Override
 	public void run() {
 		outside: try {
+			/* 输入输出流 */
 			BufferedReader fromClient = new BufferedReader(
 					new InputStreamReader(clientSocket.getInputStream()));
 			DataOutputStream toClient = new DataOutputStream(
@@ -35,6 +36,14 @@ public class Pooling extends Thread {
 
 			// Read the request line
 			String line = fromClient.readLine();
+//			String tmp = line;
+//			String headers = "";
+//			while ((tmp=fromClient.readLine())!=null)
+//			{
+//				headers+=tmp;
+//			}
+//			System.out.println("headers= "+headers);
+			System.out.println("first line= "+line);
 			String firstLine = line;
 
 			if (line == null) {
@@ -69,6 +78,17 @@ public class Pooling extends Thread {
 				}
 
 				if (line.toLowerCase().startsWith("get")) {
+					System.out.println("-------get----------");
+					line = line.replaceFirst("http://", "");
+					System.out.println("line_http: "+line);
+					String rep = line.split(" ")[1]
+							.substring(line.split(" ")[1].indexOf("/"));
+					System.out.println("rep: "+rep);
+					line = line.replaceAll(line.split(" ")[1], rep);
+					System.out.println("getLine: "+line);
+				}
+				else if(line.toLowerCase().startsWith("post")) {
+					System.out.println("-------post----------");
 					line = line.replaceFirst("http://", "");
 					String rep = line.split(" ")[1]
 							.substring(line.split(" ")[1].indexOf("/"));
@@ -77,6 +97,7 @@ public class Pooling extends Thread {
 
 				part.append(line + "\n");
 				line = fromClient.readLine();
+				System.out.println("second line : "+line);
 			}
 
 			// HTTP CONNECT Tunneling
@@ -171,6 +192,12 @@ public class Pooling extends Thread {
 
 					toServer.println(line);
 					line = fromClient.readLine();
+					if (line=="\n")
+					{
+						line = fromClient.readLine();
+						System.out.println("post_data= "+line);
+					}
+					System.out.println("third line: "+line);
 				}
 
 				toServer.println("\r\n\r\n");
@@ -184,8 +211,8 @@ public class Pooling extends Thread {
 					toClient.write(response, 0, bytesRead);
 					toClient.flush();
 				}
-				Caching.logHistory(host);
-				Caching.saveFile(response.toString(), host);
+//				Caching.logHistory(host);
+//				Caching.saveFile(response.toString(), host);
 				server.close();
 				clientSocket.close();
 			}

@@ -102,7 +102,7 @@ public class SU extends Thread {
 		for(int i=0; i < blacklist.size(); i++) {
 			blacklistedWebsites[i] = blacklist.get(i);
 		}
-		
+		 
 		return blacklistedWebsites;
 	}
 	
