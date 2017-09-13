@@ -1,4 +1,4 @@
-package com.syzible.proxyserver;
+package com.tomyca.proxyserver;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStream;
@@ -36,13 +36,6 @@ public class Pooling extends Thread {
 
 			// Read the request line
 			String line = fromClient.readLine();
-//			String tmp = line;
-//			String headers = "";
-//			while ((tmp=fromClient.readLine())!=null)
-//			{
-//				headers+=tmp;
-//			}
-//			System.out.println("headers= "+headers);
 			System.out.println("first line= "+line);
 			String firstLine = line;
 
@@ -86,13 +79,6 @@ public class Pooling extends Thread {
 					System.out.println("rep: "+rep);
 					line = line.replaceAll(line.split(" ")[1], rep);
 					System.out.println("getLine: "+line);
-				}
-				else if(line.toLowerCase().startsWith("post")) {
-					System.out.println("-------post----------");
-					line = line.replaceFirst("http://", "");
-					String rep = line.split(" ")[1]
-							.substring(line.split(" ")[1].indexOf("/"));
-					line = line.replaceAll(line.split(" ")[1], rep);
 				}
 
 				part.append(line + "\n");
@@ -169,53 +155,44 @@ public class Pooling extends Thread {
 				port = Helpers.NON_CONNECT_PORT;
 			}
 
-			if (Blacklist.checkList(host)) {
-				Blacklist.blockWebsite(host, clientSocket);
-				server.close();
-				clientSocket.close();
-				break outside;
-			} else {
-				// Forward request
-				server.connect(new InetSocketAddress(host, port));
-				PrintWriter toServer = new PrintWriter(
-						server.getOutputStream(), true);
-				toServer.print(part.toString());
+			// Forward request
+			server.connect(new InetSocketAddress(host, port));
+			PrintWriter toServer = new PrintWriter(
+					server.getOutputStream(), true);
+			toServer.print(part.toString());
 
-				// Write the rest of headers
-				while (line != null && !line.equals("")) {
-					if (line.contains("keep-alive")) {
-						line = line.replaceAll("keep-alive", "close");
-					}
-					if (line.contains("HTTP/1.1")) {
-						line = line.replaceAll("HTTP/1.1", "HTTP/1.0");
-					}
+			// Write the rest of headers
+			while (line != null && !line.equals("")) {
+				if (line.contains("keep-alive")) {
+					line = line.replaceAll("keep-alive", "close");
+				}
+				if (line.contains("HTTP/1.1")) {
+					line = line.replaceAll("HTTP/1.1", "HTTP/1.0");
+				}
 
-					toServer.println(line);
+				toServer.println(line);
+				line = fromClient.readLine();
+				if (line=="\n")
+				{
 					line = fromClient.readLine();
-					if (line=="\n")
-					{
-						line = fromClient.readLine();
-						System.out.println("post_data= "+line);
-					}
-					System.out.println("third line: "+line);
+					System.out.println("post_data= "+line);
 				}
-
-				toServer.println("\r\n\r\n");
-
-				// Get response from server
-				// Forward to client
-				InputStream fromServer = server.getInputStream();
-				int bytesRead = 0;
-				byte[] response = new byte[4096];
-				while ((bytesRead = fromServer.read(response)) != -1) {
-					toClient.write(response, 0, bytesRead);
-					toClient.flush();
-				}
-//				Caching.logHistory(host);
-//				Caching.saveFile(response.toString(), host);
-				server.close();
-				clientSocket.close();
+				System.out.println("third line: "+line);
 			}
+
+			toServer.println("\r\n\r\n");
+
+			// Get response from server
+			// Forward to client
+			InputStream fromServer = server.getInputStream(); 
+			int bytesRead = 0;
+			byte[] response = new byte[4096];
+			while ((bytesRead = fromServer.read(response)) != -1) {
+				toClient.write(response, 0, bytesRead);
+				toClient.flush();
+			}
+			server.close();
+			clientSocket.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -1,8 +1,8 @@
-package com.syzible.proxyserver;
+package com.tomyca.proxyserver;
 import java.util.regex.Pattern;
 
 public class Helpers {
-	public static final int PORT = 2016;
+	public static final int PORT = 8000;
 	public static final int NON_CONNECT_PORT = 80;
 	public static final int CONNECT_PORT = 443;
 	
